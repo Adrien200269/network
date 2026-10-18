@@ -9,7 +9,7 @@ function createWindow() {
     minWidth: 850,
     minHeight: 650,
     backgroundColor: '#0a0d14',
-    title: 'Network Velocity - Speed Checker',
+    title: 'Network ko speed',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,

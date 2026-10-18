@@ -1,5 +1,5 @@
 /**
- * Speedometer Gauge with progressive logarithmic scaling and glowing canvas renderer
+ * Speedometer Gauge with progressive logarithmic scaling, responsive sizing, and light/dark theme adaptation
  */
 class SpeedGauge {
   constructor(canvasId) {
@@ -14,6 +14,11 @@ class SpeedGauge {
     this.mode = 'idle'; // 'download', 'upload', 'ping', 'idle'
     
     this.setupHiDPI();
+    window.addEventListener('resize', () => {
+      this.setupHiDPI();
+      this.draw();
+    });
+
     this.startAnimationLoop();
   }
 
@@ -25,6 +30,7 @@ class SpeedGauge {
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
+    this.ctx.resetTransform?.();
     this.ctx.scale(dpr, dpr);
     this.displayWidth = width;
     this.displayHeight = height;
@@ -70,33 +76,36 @@ class SpeedGauge {
   }
 
   getColorTheme() {
+    const isLight = document.body.classList.contains('light-theme');
+
     if (this.mode === 'download') {
       return {
-        main: '#00f2fe',
+        main: isLight ? '#0084d1' : '#00f2fe',
         gradientStart: '#00f2fe',
-        gradientEnd: '#4facfe',
-        glow: 'rgba(0, 242, 254, 0.4)'
+        gradientEnd: isLight ? '#0284c7' : '#4facfe',
+        glow: isLight ? 'rgba(0, 132, 209, 0.4)' : 'rgba(0, 242, 254, 0.4)'
       };
     } else if (this.mode === 'upload') {
       return {
-        main: '#f72585',
+        main: isLight ? '#d90479' : '#f72585',
         gradientStart: '#9d4edd',
-        gradientEnd: '#f72585',
-        glow: 'rgba(247, 37, 133, 0.4)'
+        gradientEnd: isLight ? '#d90479' : '#f72585',
+        glow: isLight ? 'rgba(217, 4, 121, 0.4)' : 'rgba(247, 37, 133, 0.4)'
       };
     } else if (this.mode === 'ping') {
       return {
-        main: '#fbbf24',
+        main: isLight ? '#d97706' : '#fbbf24',
         gradientStart: '#f59e0b',
-        gradientEnd: '#fbbf24',
-        glow: 'rgba(251, 191, 36, 0.4)'
+        gradientEnd: isLight ? '#d97706' : '#fbbf24',
+        glow: isLight ? 'rgba(217, 119, 6, 0.4)' : 'rgba(251, 191, 36, 0.4)'
       };
     }
+
     return {
-      main: '#38bdf8',
+      main: isLight ? '#0284c7' : '#38bdf8',
       gradientStart: '#38bdf8',
       gradientEnd: '#818cf8',
-      glow: 'rgba(56, 189, 248, 0.2)'
+      glow: isLight ? 'rgba(2, 132, 199, 0.3)' : 'rgba(56, 189, 248, 0.25)'
     };
   }
 
@@ -107,6 +116,7 @@ class SpeedGauge {
 
     ctx.clearRect(0, 0, width, height);
 
+    const isLight = document.body.classList.contains('light-theme');
     const centerX = width / 2;
     const centerY = height * 0.58;
     const radius = Math.min(centerX, centerY) * 0.88;
@@ -124,9 +134,9 @@ class SpeedGauge {
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-    ctx.lineWidth = 14;
+    ctx.lineWidth = Math.max(10, radius * 0.09);
     ctx.lineCap = 'round';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+    ctx.strokeStyle = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.07)';
     ctx.stroke();
     ctx.restore();
 
@@ -135,7 +145,7 @@ class SpeedGauge {
       ctx.save();
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, startAngle, activeAngle);
-      ctx.lineWidth = 14;
+      ctx.lineWidth = Math.max(10, radius * 0.09);
       ctx.lineCap = 'round';
 
       const gradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
@@ -154,11 +164,9 @@ class SpeedGauge {
     for (let i = 0; i < numTicks; i++) {
       const tickFrac = i / (numTicks - 1);
       const angle = startAngle + totalSpan * tickFrac;
-      const isMajor = true;
 
-      // Tick line
-      const innerR = radius - 18;
-      const outerR = radius - 8;
+      const innerR = radius - (radius * 0.12);
+      const outerR = radius - (radius * 0.05);
 
       const x1 = centerX + Math.cos(angle) * innerR;
       const y1 = centerY + Math.sin(angle) * innerR;
@@ -170,16 +178,20 @@ class SpeedGauge {
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.lineWidth = 2;
-      ctx.strokeStyle = tickFrac <= fraction ? theme.main : 'rgba(255, 255, 255, 0.2)';
+      const isActive = tickFrac <= fraction;
+      ctx.strokeStyle = isActive ? theme.main : (isLight ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.2)');
       ctx.stroke();
 
       // Tick Text
-      const textR = radius - 30;
+      const textR = radius - (radius * 0.22);
       const tx = centerX + Math.cos(angle) * textR;
       const ty = centerY + Math.sin(angle) * textR;
 
-      ctx.font = '600 10px -apple-system, sans-serif';
-      ctx.fillStyle = tickFrac <= fraction ? '#ffffff' : 'rgba(255, 255, 255, 0.35)';
+      const fontSize = Math.max(9, Math.round(radius * 0.07));
+      ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
+      ctx.fillStyle = isActive 
+        ? (isLight ? '#0f172a' : '#ffffff') 
+        : (isLight ? '#64748b' : 'rgba(255, 255, 255, 0.35)');
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(this.ticks[i].toString(), tx, ty);
@@ -189,12 +201,12 @@ class SpeedGauge {
     // 4. Center Needle Pointer
     ctx.save();
     const needleAngle = activeAngle;
-    const needleLength = radius - 38;
+    const needleLength = radius - (radius * 0.24);
 
     // Needle pivot circle
     ctx.beginPath();
     ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = isLight ? '#ffffff' : '#0f172a';
     ctx.strokeStyle = theme.main;
     ctx.lineWidth = 3;
     ctx.shadowColor = theme.glow;
@@ -218,7 +230,7 @@ class SpeedGauge {
     // Needle center glow dot
     ctx.beginPath();
     ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
     ctx.fill();
 
     ctx.restore();

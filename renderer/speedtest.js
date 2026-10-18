@@ -1,5 +1,5 @@
 /**
- * Core Network Speed Test Engine & UI Controller
+ * Core Network Speed Test Engine, UI Controller, Theme & Glowing Cursor
  */
 
 // Global UI Elements
@@ -7,6 +7,7 @@ const statusPill = document.getElementById('statusPill');
 const statusText = document.getElementById('statusText');
 const startBtn = document.getElementById('startBtn');
 const startBtnLabel = document.getElementById('startBtnLabel');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 const metaIp = document.getElementById('metaIp');
 const metaLocation = document.getElementById('metaLocation');
@@ -45,6 +46,10 @@ const historyTbody = document.getElementById('historyTbody');
 const copyResultsBtn = document.getElementById('copyResultsBtn');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
+// Cursor Elements
+const cursorDot = document.getElementById('cursorDot');
+const cursorAura = document.getElementById('cursorAura');
+
 // Initialize visual components
 let gauge;
 let liveChart;
@@ -70,6 +75,12 @@ const COLO_MAP = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Theme initialization
+  initTheme();
+
+  // Glowing custom cursor initialization
+  initGlowingCursor();
+
   gauge = new window.SpeedGauge('gaugeCanvas');
   liveChart = new window.LiveThroughputChart('liveChartCanvas');
 
@@ -79,9 +90,110 @@ document.addEventListener('DOMContentLoaded', async () => {
   startBtn.addEventListener('click', toggleTest);
   copyResultsBtn.addEventListener('click', copySummaryToClipboard);
   clearHistoryBtn.addEventListener('click', clearHistory);
+  themeToggleBtn.addEventListener('click', toggleTheme);
 });
 
-// Network metadata detection
+// =========================================================
+// THEME MANAGEMENT (LIGHT / DARK MODE)
+// =========================================================
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme_preference') || 'dark';
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem('theme_preference', isLight ? 'light' : 'dark');
+
+  // Redraw canvas components with the new theme colors
+  if (gauge) {
+    gauge.setupHiDPI();
+    gauge.draw();
+  }
+  if (liveChart) {
+    liveChart.setupHiDPI();
+    liveChart.draw();
+  }
+}
+
+// =========================================================
+// GLOWING CURSOR LOGIC (DESKTOP)
+// =========================================================
+function initGlowingCursor() {
+  if (!cursorDot || !cursorAura) return;
+  // If touch device, ignore custom cursor
+  if (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+    return;
+  }
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let auraX = mouseX;
+  let auraY = mouseY;
+  let isVisible = false;
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    if (!isVisible) {
+      isVisible = true;
+      cursorDot.style.opacity = '1';
+      cursorAura.style.opacity = '1';
+    }
+
+    cursorDot.style.left = `${mouseX}px`;
+    cursorDot.style.top = `${mouseY}px`;
+  });
+
+  document.addEventListener('mouseleave', () => {
+    isVisible = false;
+    cursorDot.style.opacity = '0';
+    cursorAura.style.opacity = '0';
+  });
+
+  // Smooth lerp trailing loop for aura
+  function animateAura() {
+    auraX += (mouseX - auraX) * 0.18;
+    auraY += (mouseY - auraY) * 0.18;
+
+    cursorAura.style.left = `${auraX}px`;
+    cursorAura.style.top = `${auraY}px`;
+
+    requestAnimationFrame(animateAura);
+  }
+  requestAnimationFrame(animateAura);
+
+  // Interactive Hover Targets
+  const interactiveSelector = 'button, a, input, .metric-card, canvas, .theme-toggle-btn';
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(interactiveSelector)) {
+      document.body.classList.add('cursor-hover');
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest(interactiveSelector)) {
+      document.body.classList.remove('cursor-hover');
+    }
+  });
+
+  document.addEventListener('mousedown', () => {
+    document.body.classList.add('cursor-click');
+  });
+
+  document.addEventListener('mouseup', () => {
+    document.body.classList.remove('cursor-click');
+  });
+}
+
+// =========================================================
+// NETWORK METADATA DETECTION
+// =========================================================
 async function detectNetworkInfo() {
   try {
     // 1. Get system local interface via Electron IPC if available, or browser network info
@@ -97,9 +209,9 @@ async function detectNetworkInfo() {
       const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       if (conn && conn.effectiveType) {
         const eff = conn.effectiveType.toUpperCase();
-        metaInterface.textContent = `Web Client (${eff}${conn.rtt ? ` ~${conn.rtt}ms` : ''})`;
+        metaInterface.textContent = `Browser (${eff}${conn.rtt ? ` ~${conn.rtt}ms` : ''})`;
       } else {
-        metaInterface.textContent = 'Web Browser Client';
+        metaInterface.textContent = 'Browser Client';
       }
     }
 
@@ -129,7 +241,9 @@ async function detectNetworkInfo() {
   }
 }
 
-// Start / Stop Test Handler
+// =========================================================
+// START / STOP TEST PIPELINE
+// =========================================================
 async function toggleTest() {
   if (isRunning) {
     stopTest('Cancelled by user');
@@ -163,7 +277,7 @@ async function startTest() {
   startBtnLabel.textContent = 'STOP TEST';
   statusPill.classList.add('testing');
   statusText.textContent = 'Testing in progress...';
-  verdictBanner.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+  verdictBanner.style.borderColor = 'var(--card-border)';
   verdictIcon.textContent = '⚡';
   verdictText.textContent = 'Analyzing connection telemetry...';
 
@@ -216,8 +330,7 @@ async function startTest() {
 
     if (signal.aborted) return;
 
-    // Small pause between phases
-    await delay(400);
+    await delay(350);
 
     // ----------------------------------------------------
     // PHASE 2: Download Speed Test
@@ -249,7 +362,7 @@ async function startTest() {
 
     if (signal.aborted) return;
 
-    await delay(500);
+    await delay(450);
 
     // ----------------------------------------------------
     // PHASE 3: Upload Speed Test
@@ -343,7 +456,6 @@ async function measurePingAndJitter(signal, onProgress) {
   const sum = pings.reduce((a, b) => a + b, 0);
   const avg = sum / pings.length;
 
-  // Jitter RFC 3550 standard (mean difference of consecutive samples)
   let jitterSum = 0;
   for (let i = 1; i < pings.length; i++) {
     jitterSum += Math.abs(pings[i] - pings[i - 1]);
@@ -355,22 +467,17 @@ async function measurePingAndJitter(signal, onProgress) {
 
 // Download speed test with multi-stream saturation
 async function measureDownloadSpeed(signal, onProgress) {
-  const testDurationMs = 8000;
+  const testDurationMs = 7500;
   const startTime = performance.now();
   let totalBytes = 0;
   let peakSpeed = 0;
 
-  // Rolling window for instant speed calculation (last 450ms)
   const windowSamples = [];
-
   const streamCount = 3;
-  let activeWorkers = 0;
 
   async function downloadWorker() {
-    activeWorkers++;
     while (performance.now() - startTime < testDurationMs && !signal.aborted) {
       try {
-        // Fetch 12MB chunk
         const res = await fetch(`https://speed.cloudflare.com/__down?bytes=12000000&cb=${Date.now()}`, {
           cache: 'no-store',
           signal
@@ -391,12 +498,10 @@ async function measureDownloadSpeed(signal, onProgress) {
 
           windowSamples.push({ t: now, bytes });
 
-          // Prune window older than 450ms
           while (windowSamples.length > 0 && now - windowSamples[0].t > 450) {
             windowSamples.shift();
           }
 
-          // Instant speed
           if (windowSamples.length > 1) {
             const windowDuration = (now - windowSamples[0].t) / 1000;
             if (windowDuration > 0.05) {
@@ -417,10 +522,8 @@ async function measureDownloadSpeed(signal, onProgress) {
         await delay(50);
       }
     }
-    activeWorkers--;
   }
 
-  // Launch parallel streams
   const workers = Array.from({ length: streamCount }, () => downloadWorker());
   await Promise.all(workers);
 
@@ -441,7 +544,6 @@ async function measureUploadSpeed(signal, onProgress) {
   let totalBytes = 0;
   let peakSpeed = 0;
 
-  // Prepare chunk buffers of 2MB
   const chunkSize = 2000000; // 2MB
   const chunkBuffer = new Uint8Array(chunkSize);
   for (let i = 0; i < chunkSize; i += 1024) {
@@ -534,7 +636,7 @@ function computeVerdict(res) {
   res.gradeClass = gradeClass;
 
   verdictIcon.textContent = grade === 'A+' || grade === 'A' ? '🚀' : (grade === 'B' ? '📶' : '⚠️');
-  verdictBanner.style.borderColor = grade.startsWith('A') ? 'rgba(0, 242, 254, 0.3)' : 'rgba(255, 255, 255, 0.1)';
+  verdictBanner.style.borderColor = grade.startsWith('A') ? 'rgba(0, 242, 254, 0.4)' : 'var(--card-border)';
   verdictText.innerHTML = `<strong>Rating [${grade}]:</strong> ${comment}`;
 }
 
@@ -552,7 +654,6 @@ function saveHistory(res) {
       gradeClass: res.gradeClass
     });
 
-    // Keep last 15
     if (list.length > 15) list.pop();
     localStorage.setItem('speedtest_history', JSON.stringify(list));
     renderHistory(list);
@@ -605,7 +706,7 @@ function copySummaryToClipboard() {
 
   const summary = `
 ========================================
-⚡ NETWORK VELOCITY SPEED TEST REPORT
+⚡ NETWORK KO SPEED - SPEED TEST REPORT
 ========================================
 Date: ${new Date().toLocaleString()}
 IP: ${metaIp.textContent}
@@ -618,7 +719,7 @@ Interface: ${metaInterface.textContent}
 〰️ Jitter:   ${currentResults.jitter.toFixed(1)} ms
 🏆 Rating:   ${currentResults.grade}
 ========================================
-Generated by Network Velocity Desktop App
+Generated by Network ko speed
   `.trim();
 
   if (window.electronAPI && window.electronAPI.copyToClipboard) {

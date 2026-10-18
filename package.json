@@ -1,7 +1,7 @@
 {
   "name": "network-speed-checker",
   "version": "1.0.0",
-  "description": "High-precision Desktop Network Speed Checker",
+  "description": "Network ko speed - High-precision Speed Checker",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Network Velocity - Speed Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Network ko speed</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Custom Glowing Cursor Elements -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-aura" id="cursorAura"></div>
+
   <div class="app-container">
     <!-- Top Header -->
     <header class="app-header">
@@ -20,12 +24,31 @@
           </svg>
         </div>
         <div>
-          <h1 class="logo-text">Network Velocity</h1>
+          <h1 class="logo-text">Network ko speed</h1>
           <div class="sub-text">High-Precision Speed Checker</div>
         </div>
       </div>
 
-      <div class="network-badge-container">
+      <div class="header-controls">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Light/Dark Mode">
+          <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Status Pill -->
         <div class="status-pill" id="statusPill">
           <span class="status-dot"></span>
           <span id="statusText">Ready</span>
@@ -46,7 +69,7 @@
       </div>
       <div class="meta-divider"></div>
       <div class="meta-item">
-        <span class="meta-label">Local Interface</span>
+        <span class="meta-label">Interface / Connection</span>
         <span class="meta-value" id="metaInterface">Detecting...</span>
       </div>
       <div class="meta-divider"></div>
@@ -60,7 +83,7 @@
     <main class="main-stage">
       <div class="gauge-section">
         <div class="canvas-wrapper">
-          <canvas id="gaugeCanvas" width="380" height="320"></canvas>
+          <canvas id="gaugeCanvas" width="360" height="290"></canvas>
           <div class="gauge-center-content">
             <div class="phase-tag" id="phaseTag">STANDBY</div>
             <div class="current-speed-num" id="currentSpeedVal">0.0</div>
@@ -92,7 +115,7 @@
           </div>
         </div>
         <div class="graph-canvas-box">
-          <canvas id="liveChartCanvas" width="460" height="230"></canvas>
+          <canvas id="liveChartCanvas" width="460" height="210"></canvas>
         </div>
         <div class="verdict-banner" id="verdictBanner">
           <span id="verdictIcon">⚡</span>

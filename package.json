@@ -1,0 +1,21 @@
+{
+  "name": "network-speed-checker",
+  "version": "1.0.0",
+  "description": "High-precision Desktop Network Speed Checker",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "network",
+    "speedtest",
+    "bandwidth",
+    "electron"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^41.2.1"
+  }
+}

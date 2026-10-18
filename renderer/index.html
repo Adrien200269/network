@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Velocity - Speed Checker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-text">Network Velocity</h1>
+          <div class="sub-text">High-Precision Speed Checker</div>
+        </div>
+      </div>
+
+      <div class="network-badge-container">
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Connection Metadata Card -->
+    <section class="connection-bar">
+      <div class="meta-item">
+        <span class="meta-label">IP Address</span>
+        <span class="meta-value" id="metaIp">Detecting...</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <span class="meta-label">Location / Server</span>
+        <span class="meta-value" id="metaLocation">Detecting...</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <span class="meta-label">Local Interface</span>
+        <span class="meta-value" id="metaInterface">Detecting...</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-item">
+        <span class="meta-label">Provider Network</span>
+        <span class="meta-value" id="metaProvider">Cloudflare Edge</span>
+      </div>
+    </section>
+
+    <!-- Main Visual Stage (Gauge & Real-time Graph) -->
+    <main class="main-stage">
+      <div class="gauge-section">
+        <div class="canvas-wrapper">
+          <canvas id="gaugeCanvas" width="380" height="320"></canvas>
+          <div class="gauge-center-content">
+            <div class="phase-tag" id="phaseTag">STANDBY</div>
+            <div class="current-speed-num" id="currentSpeedVal">0.0</div>
+            <div class="current-speed-unit">Mbps</div>
+            <div class="peak-indicator" id="peakIndicator">Peak: 0.0 Mbps</div>
+          </div>
+        </div>
+
+        <div class="action-btn-container">
+          <button id="startBtn" class="primary-btn">
+            <span class="btn-ripple"></span>
+            <span class="btn-label" id="startBtnLabel">START TEST</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Throughput Graph -->
+      <div class="graph-section">
+        <div class="graph-header">
+          <div class="graph-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Live Throughput Stream
+          </div>
+          <div class="graph-legend">
+            <span class="legend-dot download-dot"></span> Download
+            <span class="legend-dot upload-dot" style="margin-left: 12px;"></span> Upload
+          </div>
+        </div>
+        <div class="graph-canvas-box">
+          <canvas id="liveChartCanvas" width="460" height="230"></canvas>
+        </div>
+        <div class="verdict-banner" id="verdictBanner">
+          <span id="verdictIcon">⚡</span>
+          <span id="verdictText">Click "START TEST" to analyze bandwidth, latency, and packet stability.</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Metric Cards Grid -->
+    <section class="metrics-grid">
+      <!-- Download Card -->
+      <div class="metric-card download-card" id="cardDownload">
+        <div class="metric-header">
+          <div class="metric-icon-wrap icon-dl">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v13M5 10l7 7 7-7"/>
+              <path d="M5 21h14"/>
+            </svg>
+          </div>
+          <span class="metric-title">Download</span>
+        </div>
+        <div class="metric-body">
+          <div class="metric-main-value">
+            <span id="valDownload">0.00</span>
+            <span class="metric-unit">Mbps</span>
+          </div>
+          <div class="metric-sub-stats">
+            <span>Peak: <strong id="subPeakDl">0.00</strong> Mbps</span>
+            <span>Data: <strong id="subDataDl">0</strong> MB</span>
+          </div>
+        </div>
+        <div class="metric-progress-line">
+          <div class="line-fill fill-dl" id="fillDl"></div>
+        </div>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="metric-card upload-card" id="cardUpload">
+        <div class="metric-header">
+          <div class="metric-icon-wrap icon-ul">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 17V3M5 10l7-7 7 7"/>
+              <path d="M5 21h14"/>
+            </svg>
+          </div>
+          <span class="metric-title">Upload</span>
+        </div>
+        <div class="metric-body">
+          <div class="metric-main-value">
+            <span id="valUpload">0.00</span>
+            <span class="metric-unit">Mbps</span>
+          </div>
+          <div class="metric-sub-stats">
+            <span>Peak: <strong id="subPeakUl">0.00</strong> Mbps</span>
+            <span>Data: <strong id="subDataUl">0</strong> MB</span>
+          </div>
+        </div>
+        <div class="metric-progress-line">
+          <div class="line-fill fill-ul" id="fillUl"></div>
+        </div>
+      </div>
+
+      <!-- Latency Card -->
+      <div class="metric-card ping-card" id="cardPing">
+        <div class="metric-header">
+          <div class="metric-icon-wrap icon-ping">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <span class="metric-title">Latency (Ping)</span>
+        </div>
+        <div class="metric-body">
+          <div class="metric-main-value">
+            <span id="valPing">--</span>
+            <span class="metric-unit">ms</span>
+          </div>
+          <div class="metric-sub-stats">
+            <span>Min: <strong id="subMinPing">--</strong> ms</span>
+            <span>Max: <strong id="subMaxPing">--</strong> ms</span>
+          </div>
+        </div>
+        <div class="metric-progress-line">
+          <div class="line-fill fill-ping" id="fillPing"></div>
+        </div>
+      </div>
+
+      <!-- Jitter Card -->
+      <div class="metric-card jitter-card" id="cardJitter">
+        <div class="metric-header">
+          <div class="metric-icon-wrap icon-jitter">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12h3l3-8 4 16 3-8 3 4h4"></path>
+            </svg>
+          </div>
+          <span class="metric-title">Jitter</span>
+        </div>
+        <div class="metric-body">
+          <div class="metric-main-value">
+            <span id="valJitter">--</span>
+            <span class="metric-unit">ms</span>
+          </div>
+          <div class="metric-sub-stats">
+            <span>Stability: <strong id="subStability">--</strong></span>
+            <span>Samples: <strong id="subSamples">0</strong></span>
+          </div>
+        </div>
+        <div class="metric-progress-line">
+          <div class="line-fill fill-jitter" id="fillJitter"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- History & Details Bottom Drawer -->
+    <section class="history-section">
+      <div class="history-header">
+        <div class="history-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 15 15"></polyline>
+          </svg>
+          Recent Test History
+        </div>
+        <div class="history-actions">
+          <button class="secondary-btn" id="copyResultsBtn" title="Copy current results as text">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy Summary
+          </button>
+          <button class="secondary-btn" id="clearHistoryBtn">Clear History</button>
+        </div>
+      </div>
+
+      <div class="history-table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Download</th>
+              <th>Upload</th>
+              <th>Ping</th>
+              <th>Jitter</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody id="historyTbody">
+            <tr class="empty-row">
+              <td colspan="6">No previous tests recorded yet. Run a test to save history!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="gauge.js"></script>
+  <script src="chart.js"></script>
+  <script src="speedtest.js"></script>
+</body>
+</html>

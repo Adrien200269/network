@@ -80,6 +80,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Glowing custom cursor initialization
   initGlowingCursor();
 
+  // Live real-time clock
+  initLiveClock();
+
+  // Saxophone background music toggle
+  initMusicToggle();
+
   gauge = new window.SpeedGauge('gaugeCanvas');
   liveChart = new window.LiveThroughputChart('liveChartCanvas');
 
@@ -91,6 +97,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   clearHistoryBtn.addEventListener('click', clearHistory);
   themeToggleBtn.addEventListener('click', toggleTheme);
 });
+
+// =========================================================
+// LIVE REAL-TIME CLOCK DISPLAY
+// =========================================================
+function initLiveClock() {
+  const liveTimeText = document.getElementById('liveTimeText');
+  if (!liveTimeText) return;
+
+  function updateClock() {
+    const now = new Date();
+    liveTimeText.textContent = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+// =========================================================
+// SAXOPHONE BACKGROUND MUSIC TOGGLE
+// =========================================================
+function initMusicToggle() {
+  const musicBtn = document.getElementById('musicToggleBtn');
+  const musicBtnLabel = document.getElementById('musicBtnLabel');
+  if (!musicBtn || !window.SaxophoneMusicEngine) return;
+
+  const saxEngine = new window.SaxophoneMusicEngine();
+
+  musicBtn.addEventListener('click', () => {
+    const isPlaying = saxEngine.toggle();
+    if (isPlaying) {
+      musicBtn.classList.add('playing');
+      if (musicBtnLabel) musicBtnLabel.textContent = 'Sax Playing 🎷';
+    } else {
+      musicBtn.classList.remove('playing');
+      if (musicBtnLabel) musicBtnLabel.textContent = 'Sax Music';
+    }
+  });
+}
 
 // =========================================================
 // THEME MANAGEMENT (LIGHT / DARK MODE)

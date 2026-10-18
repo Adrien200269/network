@@ -29,6 +29,26 @@
       </div>
 
       <div class="header-controls">
+        <!-- Live Clock Display -->
+        <div class="time-badge" id="liveTimeBadge" title="Current Local Time">
+          <svg class="clock-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span id="liveTimeText">--:--:--</span>
+        </div>
+
+        <!-- Saxophone Music Toggle Button -->
+        <button class="music-toggle-btn" id="musicToggleBtn" aria-label="Toggle Saxophone Music" title="Play Smooth Saxophone Music">
+          <span class="sax-emoji">🎷</span>
+          <div class="eq-bars" id="eqBars">
+            <span class="eq-bar bar-1"></span>
+            <span class="eq-bar bar-2"></span>
+            <span class="eq-bar bar-3"></span>
+          </div>
+          <span class="music-btn-label" id="musicBtnLabel">Sax Music</span>
+        </button>
+
         <!-- Theme Toggle Button -->
         <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Light/Dark Mode">
           <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -275,6 +295,7 @@
 
   <script src="gauge.js"></script>
   <script src="chart.js"></script>
+  <script src="sax-music.js"></script>
   <script src="speedtest.js"></script>
 </body>
 </html>

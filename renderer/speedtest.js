@@ -47,8 +47,7 @@ const copyResultsBtn = document.getElementById('copyResultsBtn');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
 // Cursor Elements
-const cursorDot = document.getElementById('cursorDot');
-const cursorAura = document.getElementById('cursorAura');
+const cursorGlow = document.getElementById('cursorGlow');
 
 // Initialize visual components
 let gauge;
@@ -121,19 +120,19 @@ function toggleTheme() {
 }
 
 // =========================================================
-// GLOWING CURSOR LOGIC (DESKTOP)
+// GLOWING EFFECT FOR NORMAL CURSOR
 // =========================================================
 function initGlowingCursor() {
-  if (!cursorDot || !cursorAura) return;
-  // If touch device, ignore custom cursor
+  if (!cursorGlow) return;
+  // If touch device, ignore custom glow effect
   if (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
     return;
   }
 
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let auraX = mouseX;
-  let auraY = mouseY;
+  let mouseX = -100;
+  let mouseY = -100;
+  let glowX = -100;
+  let glowY = -100;
   let isVisible = false;
 
   window.addEventListener('mousemove', (e) => {
@@ -142,34 +141,33 @@ function initGlowingCursor() {
 
     if (!isVisible) {
       isVisible = true;
-      cursorDot.style.opacity = '1';
-      cursorAura.style.opacity = '1';
+      cursorGlow.style.opacity = '1';
+      glowX = mouseX;
+      glowY = mouseY;
     }
-
-    cursorDot.style.left = `${mouseX}px`;
-    cursorDot.style.top = `${mouseY}px`;
   });
 
   document.addEventListener('mouseleave', () => {
     isVisible = false;
-    cursorDot.style.opacity = '0';
-    cursorAura.style.opacity = '0';
+    cursorGlow.style.opacity = '0';
   });
 
-  // Smooth lerp trailing loop for aura
-  function animateAura() {
-    auraX += (mouseX - auraX) * 0.18;
-    auraY += (mouseY - auraY) * 0.18;
+  // Smooth lerp trailing animation loop for the glowing halo
+  function animateGlow() {
+    if (isVisible) {
+      glowX += (mouseX - glowX) * 0.22;
+      glowY += (mouseY - glowY) * 0.22;
 
-    cursorAura.style.left = `${auraX}px`;
-    cursorAura.style.top = `${auraY}px`;
+      cursorGlow.style.left = `${glowX}px`;
+      cursorGlow.style.top = `${glowY}px`;
+    }
 
-    requestAnimationFrame(animateAura);
+    requestAnimationFrame(animateGlow);
   }
-  requestAnimationFrame(animateAura);
+  requestAnimationFrame(animateGlow);
 
-  // Interactive Hover Targets
-  const interactiveSelector = 'button, a, input, .metric-card, canvas, .theme-toggle-btn';
+  // Interactive Hover Targets (enlarges and shifts glow color)
+  const interactiveSelector = 'button, a, input, .metric-card, canvas, .theme-toggle-btn, .secondary-btn, .primary-btn';
   document.addEventListener('mouseover', (e) => {
     if (e.target.closest(interactiveSelector)) {
       document.body.classList.add('cursor-hover');

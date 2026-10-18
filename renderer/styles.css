@@ -73,72 +73,62 @@ body.light-theme {
 }
 
 /* =========================================================
-   GLOWING CUSTOM CURSOR (Active on mouse devices only)
+   GLOWING EFFECT FOR NORMAL CURSOR
 ========================================================= */
+/* Ensure standard pointer cursor on all clickable elements */
+button, a, .theme-toggle-btn, .secondary-btn, .primary-btn, select {
+  cursor: pointer !important;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  body {
-    cursor: default;
-  }
-
-  .cursor-dot {
+  /* Luminous glowing aura centered directly at the normal cursor tip */
+  .cursor-glow {
     position: fixed;
     top: 0;
     left: 0;
-    width: 8px;
-    height: 8px;
-    background: #00f2fe;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 999999;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;
-    transition: width 0.15s ease, height 0.15s ease, background-color 0.2s;
-  }
-
-  .cursor-aura {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 36px;
-    height: 36px;
-    border: 1.5px solid rgba(0, 242, 254, 0.6);
-    background: radial-gradient(circle, rgba(0, 242, 254, 0.18) 0%, transparent 70%);
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     pointer-events: none;
     z-index: 999998;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-    transition: width 0.2s cubic-bezier(0.2, 0, 0, 1),
-                height 0.2s cubic-bezier(0.2, 0, 0, 1),
-                border-color 0.2s,
-                box-shadow 0.2s;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.4) 0%, rgba(0, 242, 254, 0.12) 50%, transparent 75%);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.5), inset 0 0 15px rgba(0, 242, 254, 0.25);
+    border: 1.5px solid rgba(0, 242, 254, 0.45);
+    opacity: 0;
+    transition: opacity 0.25s ease,
+                width 0.22s cubic-bezier(0.2, 0, 0, 1),
+                height 0.22s cubic-bezier(0.2, 0, 0, 1),
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                background 0.25s ease;
   }
 
-  /* Hovering over clickable interactive elements */
-  body.cursor-hover .cursor-dot {
-    width: 12px;
-    height: 12px;
-    background: #f72585;
-    box-shadow: 0 0 14px #f72585, 0 0 24px #f72585;
+  body.light-theme .cursor-glow {
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.35) 0%, rgba(2, 132, 199, 0.1) 50%, transparent 75%);
+    box-shadow: 0 0 22px rgba(2, 132, 199, 0.4), inset 0 0 12px rgba(2, 132, 199, 0.2);
+    border-color: rgba(2, 132, 199, 0.4);
   }
 
-  body.cursor-hover .cursor-aura {
-    width: 54px;
-    height: 54px;
-    border-color: rgba(247, 37, 133, 0.7);
-    background: radial-gradient(circle, rgba(247, 37, 133, 0.25) 0%, transparent 70%);
-    box-shadow: 0 0 20px rgba(247, 37, 133, 0.4);
+  /* When hovering clickable elements: enlarge and glow magenta/pink */
+  body.cursor-hover .cursor-glow {
+    width: 64px;
+    height: 64px;
+    background: radial-gradient(circle, rgba(247, 37, 133, 0.45) 0%, rgba(247, 37, 133, 0.15) 50%, transparent 75%);
+    box-shadow: 0 0 35px rgba(247, 37, 133, 0.6), inset 0 0 18px rgba(247, 37, 133, 0.3);
+    border-color: rgba(247, 37, 133, 0.65);
   }
 
-  /* Active Click */
-  body.cursor-click .cursor-aura {
-    transform: translate(-50%, -50%) scale(0.8);
+  /* Active click pulse */
+  body.cursor-click .cursor-glow {
+    transform: translate(-50%, -50%) scale(0.78);
+    box-shadow: 0 0 45px rgba(0, 242, 254, 0.8);
   }
 }
 
-/* Hide custom cursor completely on mobile/touch screens */
+/* Hide on touch screens */
 @media (hover: none), (pointer: coarse) {
-  .cursor-dot, .cursor-aura {
+  .cursor-glow {
     display: none !important;
   }
 }
